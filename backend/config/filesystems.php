@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Post Images Disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk used to store post images/thumbnails. Defaults to the local
+    | "public" disk; set to "s3" (with AWS_* env vars) to move uploads to
+    | cloud storage without touching application code.
+    |
+    */
+
+    'post_images_disk' => env('POST_IMAGES_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

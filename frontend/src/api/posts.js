@@ -1,6 +1,7 @@
 import api from './axios';
 
-export const getPosts = (page = 1) => api.get(`/posts?page=${page}`);
+export const getPosts = (cursor = null) =>
+  api.get('/posts', { params: cursor ? { cursor } : {} });
 
 export const createPost = (formData) =>
   api.post('/posts', formData, {

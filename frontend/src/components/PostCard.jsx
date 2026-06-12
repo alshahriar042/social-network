@@ -43,7 +43,7 @@ export default function PostCard({ post }) {
     if (!confirm('Delete this post?')) return;
     try {
       await deletePost(post.id);
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.resetQueries({ queryKey: ['posts'] });
       addToast('Post deleted.');
     } catch {
       addToast('Could not delete post.', 'error');
@@ -96,7 +96,7 @@ export default function PostCard({ post }) {
       {post.image && (
         <div style={{ marginBottom: 12 }}>
           <img
-            src={post.image}
+            src={post.image_thumb || post.image}
             alt="Post"
             style={{ width: '100%', maxHeight: 500, objectFit: 'contain', background: '#f7f7f7' }}
           />

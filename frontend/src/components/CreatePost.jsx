@@ -47,7 +47,7 @@ export default function CreatePost() {
       setImage(null);
       setPreview(null);
       if (fileRef.current) fileRef.current.value = '';
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.resetQueries({ queryKey: ['posts'] });
       addToast('Post published!');
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to post. Try again.';

@@ -25,7 +25,6 @@ class PostController extends Controller
         $post = $this->postService->create($request->validated(), auth('api')->user());
 
         $post->load('user');
-        $post->loadCount(['likes', 'comments']);
 
         return response()->json(new PostResource($post), 201);
     }

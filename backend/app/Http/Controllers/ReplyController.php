@@ -17,7 +17,6 @@ class ReplyController extends Controller
         $reply = $this->commentService->addReply($comment, auth('api')->user(), $request->body);
 
         $reply->load('user');
-        $reply->loadCount('likes');
 
         return response()->json(new CommentResource($reply), 201);
     }

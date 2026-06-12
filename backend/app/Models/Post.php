@@ -13,7 +13,16 @@ class Post extends Model
         'user_id',
         'body',
         'image',
+        'image_thumb',
+        'image_status',
         'visibility',
+        'likes_count',
+        'comments_count',
+    ];
+
+    protected $casts = [
+        'likes_count'    => 'integer',
+        'comments_count' => 'integer',
     ];
 
     public function user()

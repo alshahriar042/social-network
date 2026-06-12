@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { getPosts } from '../api/posts';
 import Navbar from '../components/Navbar';
 import CreatePost from '../components/CreatePost';
@@ -8,18 +7,21 @@ import DarkModeToggle from '../components/DarkModeToggle';
 import PostSkeleton from '../components/PostSkeleton';
 
 export default function FeedPage() {
-  const [page, setPage] = useState(1);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['posts', page],
-    queryFn: () => getPosts(page).then((r) => r.data),
-    placeholderData: keepPreviousData,
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: ({ pageParam }) => getPosts(pageParam).then((r) => r.data),
+    initialPageParam: null,
+    getNextPageParam: (lastPage) => lastPage.meta?.next_cursor ?? undefined,
   });
 
-  const posts = data?.data || [];
-  const meta = data?.meta || {};
-  const hasNextPage = meta.current_page < meta.last_page;
-  const hasPrevPage = meta.current_page > 1;
+  const posts = data?.pages.flatMap((p) => p.data) || [];
 
   return (
     <div className="_layout _layout_main_wrapper">
@@ -52,27 +54,16 @@ export default function FeedPage() {
                       <PostCard key={post.id} post={post} />
                     ))}
 
-                    {/* Pagination */}
-                    {(hasPrevPage || hasNextPage) && (
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: 12, padding: '16px 0' }}>
+                    {/* Load more */}
+                    {hasNextPage && (
+                      <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
                         <button
-                          onClick={() => setPage((p) => p - 1)}
-                          disabled={!hasPrevPage}
+                          onClick={() => fetchNextPage()}
+                          disabled={isFetchingNextPage}
                           className="_btn1"
-                          style={{ padding: '8px 20px', opacity: hasPrevPage ? 1 : 0.4 }}
+                          style={{ padding: '8px 20px', opacity: isFetchingNextPage ? 0.6 : 1 }}
                         >
-                          ← Prev
-                        </button>
-                        <span style={{ padding: '8px 12px', fontSize: 13, color: '#666' }}>
-                          Page {meta.current_page} of {meta.last_page}
-                        </span>
-                        <button
-                          onClick={() => setPage((p) => p + 1)}
-                          disabled={!hasNextPage}
-                          className="_btn1"
-                          style={{ padding: '8px 20px', opacity: hasNextPage ? 1 : 0.4 }}
-                        >
-                          Next →
+                          {isFetchingNextPage ? 'Loading...' : 'Load more'}
                         </button>
                       </div>
                     )}

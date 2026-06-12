@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class PostResource extends JsonResource
 {
@@ -14,10 +15,13 @@ class PostResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $disk = Storage::disk(config('filesystems.post_images_disk'));
+
         return [
             'id'             => $this->id,
             'body'           => $this->body,
-            'image'          => $this->image ? '/storage/' . $this->image : null,
+            'image'          => $this->image ? $disk->url($this->image) : null,
+            'image_thumb'    => $this->image_thumb ? $disk->url($this->image_thumb) : null,
             'visibility'     => $this->visibility,
             'author'         => new UserResource($this->whenLoaded('user')),
             'likes_count'    => $this->likes_count ?? 0,

@@ -15,11 +15,9 @@ class CommentService
                 'user',
                 'replies' => fn($q) => $q
                     ->with('user')
-                    ->withCount('likes')
                     ->withExists(['likes as liked_by_me' => fn($q) => $q->where('user_id', $user->id)])
                     ->latest(),
             ])
-            ->withCount('likes')
             ->withExists(['likes as liked_by_me' => fn($q) => $q->where('user_id', $user->id)])
             ->where('post_id', $post->id)
             ->whereNull('parent_id')
@@ -29,11 +27,15 @@ class CommentService
 
     public function addComment(Post $post, User $user, string $body): Comment
     {
-        return Comment::create([
+        $comment = Comment::create([
             'post_id' => $post->id,
             'user_id' => $user->id,
             'body'    => $body,
         ]);
+
+        $post->increment('comments_count');
+
+        return $comment;
     }
 
     public function addReply(Comment $comment, User $user, string $body): Comment
@@ -48,6 +50,10 @@ class CommentService
 
     public function delete(Comment $comment): void
     {
+        if ($comment->parent_id === null) {
+            $comment->post()->decrement('comments_count');
+        }
+
         $comment->delete();
     }
 }

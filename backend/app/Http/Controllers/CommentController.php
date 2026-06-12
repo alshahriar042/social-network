@@ -26,7 +26,6 @@ class CommentController extends Controller
         $comment = $this->commentService->addComment($post, auth('api')->user(), $request->body);
 
         $comment->load('user');
-        $comment->loadCount('likes');
 
         return response()->json(new CommentResource($comment), 201);
     }
