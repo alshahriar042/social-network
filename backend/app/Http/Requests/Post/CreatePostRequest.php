@@ -15,7 +15,7 @@ class CreatePostRequest extends FormRequest
     {
         return [
             'body'       => 'nullable|string|max:10000',
-            'image'      => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:5120',
+            'image'      => 'nullable|image|mimes:jpg,jpeg,png,gif,webp',
             'visibility' => 'required|in:public,private',
         ];
     }

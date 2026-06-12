@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Like;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\CursorPaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 
@@ -40,8 +40,8 @@ class LikeService
         ];
     }
 
-    public function getLikers(Model $likeable, int $perPage = 20): CursorPaginator
+    public function getLikers(Model $likeable, int $limit = 50): Collection
     {
-        return $likeable->likes()->with('user')->latest('created_at')->cursorPaginate($perPage);
+        return $likeable->likes()->with('user')->latest('created_at')->limit($limit)->get();
     }
 }
