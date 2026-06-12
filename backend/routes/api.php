@@ -21,6 +21,7 @@ Route::middleware('auth:api')->group(function () {
     // Posts
     Route::get('posts', [PostController::class, 'index']);
     Route::post('posts', [PostController::class, 'store']);
+    Route::get('posts/{post}', [PostController::class, 'show']);
     Route::delete('posts/{post}', [PostController::class, 'destroy']);
 
     // Comments on a post

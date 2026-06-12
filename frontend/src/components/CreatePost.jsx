@@ -42,13 +42,31 @@ export default function CreatePost() {
       if (body.trim()) fd.append('body', body.trim());
       if (image) fd.append('image', image);
       fd.append('visibility', visibility);
-      await createPost(fd);
+      const res = await createPost(fd);
       setBody('');
       setImage(null);
       setPreview(null);
       if (fileRef.current) fileRef.current.value = '';
-      queryClient.resetQueries({ queryKey: ['posts'] });
-      addToast('Post published!');
+
+      // Prepend the new post using the response we already have, which
+      // carries `image_status: 'pending'`. A resetQueries() refetch can
+      // race with queue:listen and come back with the image already
+      // processed, losing the "pending" state the PostCard needs to
+      // show the processing overlay.
+      queryClient.setQueryData(['posts'], (old) => {
+        if (!old) return old;
+        const [firstPage, ...rest] = old.pages;
+        return {
+          ...old,
+          pages: [{ ...firstPage, data: [res.data, ...firstPage.data] }, ...rest],
+        };
+      });
+
+      if (res.data?.image_status === 'pending') {
+        addToast('Post published! Your image is still processing...');
+      } else {
+        addToast('Post published!');
+      }
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to post. Try again.';
       setError(msg);

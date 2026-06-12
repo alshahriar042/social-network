@@ -29,6 +29,13 @@ class PostController extends Controller
         return response()->json(new PostResource($post), 201);
     }
 
+    public function show(Post $post): JsonResponse
+    {
+        $post->load('user');
+
+        return response()->json(new PostResource($post));
+    }
+
     public function destroy(Post $post): JsonResponse
     {
         if ($post->user_id !== auth('api')->id()) {

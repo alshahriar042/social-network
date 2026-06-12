@@ -8,4 +8,6 @@ export const createPost = (formData) =>
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 
+export const getPost = (postId) => api.get(`/posts/${postId}`);
+
 export const deletePost = (postId) => api.delete(`/posts/${postId}`);

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { togglePostLike, getPostLikers } from '../api/likes';
-import { deletePost } from '../api/posts';
+import { deletePost, getPost } from '../api/posts';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import LikeButton from './LikeButton';
@@ -16,6 +16,26 @@ export default function PostCard({ post }) {
   const [likeCount, setLikeCount] = useState(post.likes_count);
   const [likers, setLikers] = useState(null);
   const [showComments, setShowComments] = useState(false);
+  const [imageStatus, setImageStatus] = useState(post.image_status);
+  const [imageThumb, setImageThumb] = useState(post.image_thumb);
+
+  useEffect(() => {
+    if (imageStatus !== 'pending') return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await getPost(post.id);
+        if (res.data.image_status !== 'pending') {
+          setImageStatus(res.data.image_status);
+          setImageThumb(res.data.image_thumb);
+        }
+      } catch {
+        // ignore and retry on the next tick
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [imageStatus, post.id]);
 
   async function handleToggleLike() {
     // optimistic update
@@ -94,12 +114,46 @@ export default function PostCard({ post }) {
 
       {/* Post Image */}
       {post.image && (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, position: 'relative' }}>
           <img
-            src={post.image_thumb || post.image}
+            src={imageThumb || post.image}
             alt="Post"
-            style={{ width: '100%', maxHeight: 500, objectFit: 'contain', background: '#f7f7f7' }}
+            style={{
+              width: '100%', maxHeight: 500, objectFit: 'contain', background: '#f7f7f7',
+              filter: imageStatus === 'pending' ? 'blur(3px)' : 'none',
+            }}
           />
+          {imageStatus === 'pending' && (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 8,
+              background: 'rgba(255,255,255,0.4)',
+            }}>
+              <span className="_post_processing_spinner" />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#377DFF', background: '#fff', padding: '2px 10px', borderRadius: 12 }}>
+                Processing image...
+              </span>
+            </div>
+          )}
+          {imageStatus === 'failed' && (
+            <div style={{
+              position: 'absolute', bottom: 8, left: 8,
+              background: 'rgba(231,76,60,0.9)', color: '#fff',
+              fontSize: 12, padding: '2px 8px', borderRadius: 4,
+            }}>
+              Image processing failed
+            </div>
+          )}
+          <style>{`
+            ._post_processing_spinner {
+              width: 28px; height: 28px;
+              border: 3px solid #e0e7ff;
+              border-top-color: #377DFF;
+              border-radius: 50%;
+              animation: post-processing-spin 0.8s linear infinite;
+            }
+            @keyframes post-processing-spin { to { transform: rotate(360deg); } }
+          `}</style>
         </div>
       )}
 
